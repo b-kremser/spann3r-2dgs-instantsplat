@@ -1,12 +1,18 @@
 import os
 import cv2
+import re
 import numpy as np
 import os.path as osp
 from collections import deque
+from pathlib import Path
 
 from dust3r.utils.image import imread_cv2
 from .base_many_view_dataset import BaseManyViewDataset
 
+
+def extract_number(filename):
+    match = re.search(r'\d+', filename.stem)
+    return int(match.group()) if match else float('inf')
 
 class Demo(BaseManyViewDataset):
     def __init__(self, num_seq=1, num_frames=5, 
@@ -29,7 +35,7 @@ class Demo(BaseManyViewDataset):
     
     def _get_views(self, idx, resolution, rng):
         
-        img_idxs = sorted(os.listdir(self.ROOT))
+        img_idxs = sorted(os.listdir(self.ROOT), key=lambda x: extract_number(Path(x)))
         valid_extensions = {'.jpg', '.jpeg', '.png', '.heic'}
         img_idxs = [idx for idx in img_idxs 
                     if idx.lower().endswith(tuple(valid_extensions)) and 'depth' not in idx.lower()]
@@ -44,7 +50,6 @@ class Demo(BaseManyViewDataset):
 
         while len(imgs_idxs) > 0:
             im_idx = imgs_idxs.popleft()
-
             impath = osp.join(self.ROOT, im_idx)
             if not osp.exists(impath):
                 raise FileNotFoundError(f"Image not found: {impath}")
@@ -80,19 +85,23 @@ class Demo(BaseManyViewDataset):
             else:
                 depthmap = imread_cv2(depth_path, cv2.IMREAD_UNCHANGED)
                 depthmap = (depthmap.astype(np.float32) / 65535) * np.nan_to_num(input_metadata['maximum_depth'])
+
+            original_shape = rgb_image.shape
             # resize rgb to the same size as depth
             rgb_image = cv2.resize(rgb_image, (depthmap.shape[1], depthmap.shape[0]))
 
             rgb_image, depthmap, intrinsics = self._crop_resize_if_necessary(
                 rgb_image, depthmap, intrinsics, resolution, rng=rng, info=impath)
-
             views.append(dict(
                 img=rgb_image,
                 depthmap=depthmap,
                 camera_pose=camera_pose,
                 camera_intrinsics=intrinsics,
+                original_size=original_shape,
                 dataset='demo',
                 label=osp.join(self.ROOT, im_idx),
+                suffix=Path(osp.join(self.ROOT, im_idx)).suffix,
+                file_name=str(im_idx),
                 instance=osp.split(impath)[1],
             ))
         return views

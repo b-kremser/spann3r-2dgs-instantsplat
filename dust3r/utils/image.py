@@ -21,6 +21,7 @@ except ImportError:
     heif_support_enabled = False
 
 ImgNorm = tvf.Compose([tvf.ToTensor(), tvf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+OrigImg = tvf.Compose([tvf.ToTensor()])
 
 
 def img_to_arr( img ):

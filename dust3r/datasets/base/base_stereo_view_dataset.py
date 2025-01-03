@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from dust3r.datasets.base.easy_dataset import EasyDataset
-from dust3r.datasets.utils.transforms import ImgNorm
+from dust3r.datasets.utils.transforms import ImgNorm, OrigImg
 from dust3r.utils.geometry import depthmap_to_absolute_camera_coordinates
 import dust3r.datasets.utils.cropping as cropping
 
@@ -37,6 +37,7 @@ class BaseStereoViewDataset (EasyDataset):
         self._set_resolutions(resolution)
 
         self.transform = transform
+        self.orig_transform = OrigImg
         if isinstance(transform, str):
             transform = eval(transform)
 
@@ -78,7 +79,6 @@ class BaseStereoViewDataset (EasyDataset):
         # over-loaded code
         resolution = self._resolutions[ar_idx]  # DO NOT CHANGE THIS (compatible with BatchedRandomSampler)
         views = self._get_views(idx, resolution, self._rng)
-        assert len(views) == self.num_views
 
         # check data-types
         for v, view in enumerate(views):
@@ -88,6 +88,7 @@ class BaseStereoViewDataset (EasyDataset):
             # encode the image
             width, height = view['img'].size
             view['true_shape'] = np.int32((height, width))
+            view['original_img'] = self.orig_transform(view['img'])
             view['img'] = self.transform(view['img'])
 
             assert 'camera_intrinsics' in view

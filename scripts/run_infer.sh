@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Change the absolute path first!
-DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
+DATA_ROOT_DIR="/home/team13/Workspace/InstantSplat/assets"
 OUTPUT_DIR="output_infer"
 DATASETS=(
     examples
@@ -9,7 +9,6 @@ DATASETS=(
 
 SCENES=(
     Barn
-    NUS
 )
 
 N_VIEWS=(
@@ -17,7 +16,7 @@ N_VIEWS=(
 )
 
 gs_train_iter=(
-    1500
+    5000
 )
 
 # Function to get the id of an available GPU
@@ -52,9 +51,6 @@ run_on_gpu() {
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
-    --focal_avg \
-    --co_vis_dsp \
-    --conf_aware_ranking \
     --infer_video \
     > ${MODEL_PATH}/01_init_geo.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Co-visible Global Geometry Initialization completed. Log saved in ${MODEL_PATH}/01_init_geo.log"
@@ -85,7 +81,8 @@ run_on_gpu() {
     --depth_ratio 0 \
     --num_cluster 50 \
     --mesh_res 2048 \
-    --depth_trunc 6.0 \
+    # --depth_trunc 0.0 \
+    --infer_video
     > ${MODEL_PATH}/03_render_train.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Rendering completed. Log saved in ${MODEL_PATH}/03_render_train.log"
     # --voxel_size 0.004 \

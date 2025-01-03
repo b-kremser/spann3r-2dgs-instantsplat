@@ -205,7 +205,7 @@ def save_extrinsic(sparse_path, extrinsics_w2c, img_files, image_suffix):
     images = {}
     
     for i, (w2c, img_file) in enumerate(zip(extrinsics_w2c, img_files), start=1):  # Start enumeration from 1
-        name = Path(img_file).stem + image_suffix
+        name = Path(img_file).stem + image_suffix[0]
         rotation_matrix = w2c[:3, :3]
         qvec = rotmat2qvec(rotation_matrix)
         tvec = w2c[:3, 3]
@@ -226,8 +226,8 @@ def save_extrinsic(sparse_path, extrinsics_w2c, img_files, image_suffix):
 
 def save_intrinsics(sparse_path, focals, org_imgs_shape, imgs_shape, save_focals=False):
     org_width, org_height = org_imgs_shape
-    scale_factor_x = org_width / imgs_shape[2]
-    scale_factor_y = org_height / imgs_shape[1]
+    scale_factor_x = org_width / imgs_shape[1]
+    scale_factor_y = org_height / imgs_shape[0]
     cameras_bin_file = sparse_path / 'cameras.bin'
     cameras_txt_file = sparse_path / 'cameras.txt'
 
@@ -247,14 +247,14 @@ def save_intrinsics(sparse_path, focals, org_imgs_shape, imgs_shape, save_focals
         np.save(sparse_path / 'non_scaled_focals.npy', focals)
 
 
-def save_points3D(sparse_path, imgs, pts3d, confs, masks=None, use_masks=True, save_all_pts=False, save_txt_path=None, depth_threshold=0.01, max_pts_num=150 * 10**10):
+def save_points3D(sparse_path, colors, pts3d, confs, masks=None, use_masks=True, save_all_pts=False, save_txt_path=None, max_pts_num=150 * 10**10):
     
     points3D_bin_file = sparse_path / 'points3D.bin'
     points3D_txt_file = sparse_path / 'points3D.txt'
     points3D_ply_file = sparse_path / 'points3D.ply'
 
     # Convert inputs to numpy arrays
-    imgs = to_numpy(imgs)
+    colors = to_numpy(colors)
     pts3d = to_numpy(pts3d)
     confs = to_numpy(confs)
     if confs is not None:
@@ -264,16 +264,15 @@ def save_points3D(sparse_path, imgs, pts3d, confs, masks=None, use_masks=True, s
     if use_masks:
         masks = to_numpy(masks)
         pts = np.concatenate([p[m] for p, m in zip(pts3d, masks)])
-        # pts = np.concatenate([p[m] for p, m in zip(pts3d, masks.reshape(masks.shape[0], -1))])
-        col = np.concatenate([p[m] for p, m in zip(imgs, masks)])
-        confs = np.concatenate([p[m] for p, m in zip(confs, masks.reshape(masks.shape[0], -1))])
+        col = np.concatenate([p[m] for p, m in zip(colors, masks)])
+        confs = np.concatenate([p[m] for p, m in zip(confs, masks)])
     else:
         pts = np.array(pts3d)
-        col = np.array(imgs)
+        col = np.array(colors)
         confs = np.array(confs)
 
     pts = pts.reshape(-1, 3)
-    col = col.reshape(-1, 3) * 255.
+    col = col.reshape(-1, 3)
     confs = confs.reshape(-1, 1)
 
     co_mask_dsp_pts_num = pts.shape[0]
@@ -296,14 +295,13 @@ def save_points3D(sparse_path, imgs, pts3d, confs, masks=None, use_masks=True, s
     storePly(points3D_ply_file, pts, col)
     if save_all_pts:
         np.save(sparse_path / 'points3D_all.npy', pts3d)
-        np.save(sparse_path / 'pointsColor_all.npy', imgs)
+        np.save(sparse_path / 'pointsColor_all.npy', col)
     
     # Write pts_num.txt
     if isinstance(save_txt_path, str):
         save_txt_path = Path(save_txt_path)
     pts_num_file = save_txt_path / f'pts_num.txt'  # New file for pts_num
     with open(pts_num_file, 'a') as f:
-        f.write(f"Depth threshold: {depth_threshold}\n")
         f.write(f"Vanilla points num: {pts3d.reshape(-1, 3).shape[0]}\n")
         f.write(f"Co_Mask DSP points num: {co_mask_dsp_pts_num}\n")
         f.write(f"Co_Mask DSP ratio: {co_mask_dsp_pts_num / pts3d.reshape(-1, 3).shape[0]}\n")
@@ -315,27 +313,18 @@ def save_points3D(sparse_path, imgs, pts3d, confs, masks=None, use_masks=True, s
     return pts.shape[0]
 
 
-# Save images and masks
-def save_images_and_masks(sparse_0_path, n_views, imgs, overlapping_masks, image_files, image_suffix):
+def save_images(sparse_0_path, n_views, imgs, image_files, image_suffix):
 
     images_path = sparse_0_path / f'imgs_{n_views}'
-    overlapping_masks_path = sparse_0_path / f'overlapping_masks_{n_views}'
 
     images_path.mkdir(exist_ok=True, parents=True)
-    overlapping_masks_path.mkdir(exist_ok=True, parents=True)
 
-    for i, (image, name, overlapping_mask) in enumerate(zip(imgs, image_files, overlapping_masks)):
+    for i, (image, name) in enumerate(zip(imgs, image_files)):
         imgname = Path(name).stem
-        image_save_path = images_path / f"{imgname}{image_suffix}"
-        overlapping_mask_save_path = overlapping_masks_path / f"{imgname}{image_suffix}"
-        overlapping_mask_save_path = overlapping_masks_path / f"{imgname}{image_suffix}"
-
-        # Save overlapping masks
-        overlapping_mask = np.repeat(np.expand_dims(overlapping_mask, -1), 3, axis=2) * 255
-        PIL.Image.fromarray(overlapping_mask.astype(np.uint8)).save(overlapping_mask_save_path)
+        image_save_path = images_path / f"{imgname}{image_suffix[0]}"
 
         # Save images   
-        rgb_image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         cv2.imwrite(str(image_save_path), rgb_image)
 
 
@@ -459,20 +448,6 @@ def readImages(renders_dir, gt_dir):
         renders.append(tf.to_tensor(render).unsqueeze(0)[:, :3, :, :].cuda())
         gts.append(tf.to_tensor(gt).unsqueeze(0)[:, :3, :, :].cuda())
         image_names.append(fname)
-    
-    # Sort based on numerical values in filenames
-    def extract_number(filename):
-        match = re.search(r'\d+', filename)
-        return int(match.group()) if match else float('inf')
-    
-    # Create sorting indices based on image_names
-    indices = sorted(range(len(image_names)), key=lambda k: extract_number(image_names[k]))
-    
-    # Reorder all lists using the indices
-    renders = [renders[i] for i in indices]
-    gts = [gts[i] for i in indices]
-    image_names = [image_names[i] for i in indices]
-    
     return renders, gts, image_names
 
 def align_pose(pose1, pose2):
