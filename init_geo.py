@@ -258,7 +258,7 @@ class Reconstructor:
             if j == 0:
                 preds[j]['pts3d'] = (preds[j]['pts3d'] / scale) 
             else:
-                preds[j]['pts3d_in_other_view'] = (preds[j]['pts3d_in_other_view'] / scale) * 50
+                preds[j]['pts3d_in_other_view'] = (preds[j]['pts3d_in_other_view'] / scale)
 
         focal_est, K = self._estimate_focal(preds[0]['pts3d'], preds[0]['conf'])
 
