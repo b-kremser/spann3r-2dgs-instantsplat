@@ -65,7 +65,8 @@ run_on_gpu() {
     --iterations ${gs_train_iter} \
     --optim_pose \
     --depth_ratio 0 \
-    --lambda_dist 100 \
+    --lambda_dist 50 \
+    --lambda_normal 0 \
     --pp_optimizer \
     > ${MODEL_PATH}/02_train.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Training completed. Log saved in ${MODEL_PATH}/02_train.log"
@@ -81,8 +82,7 @@ run_on_gpu() {
     --depth_ratio 0 \
     --num_cluster 50 \
     --mesh_res 2048 \
-    # --depth_trunc 0.0 \
-    --infer_video
+    --depth_trunc 2.0 \
     > ${MODEL_PATH}/03_render_train.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Rendering completed. Log saved in ${MODEL_PATH}/03_render_train.log"
     # --voxel_size 0.004 \
