@@ -91,7 +91,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
     # per-point-optimizer
     confidence_path = os.path.join(dataset.source_path, f"sparse_{dataset.n_views}/0", "confidence_dsp.npy")
-    confidence_lr = load_and_prepare_confidence(confidence_path, device='cuda', scale=(1, 25))
+    confidence_lr = load_and_prepare_confidence(confidence_path, device='cuda', scale=(1, 10))
     scene = Scene(dataset, gaussians)
 
     if opt.pp_optimizer:
