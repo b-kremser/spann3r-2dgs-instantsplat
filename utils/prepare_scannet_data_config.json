@@ -1,0 +1,22 @@
+{
+  "source_directory": "Path to the ScanNet++ source directory",
+  "output_directory": "Path to the output directory",
+  "no_images": 24,
+  "scenes": [
+    {
+      "scene_name": "7692b88644",
+      "first_image": "DSC04148.JPG",
+      "last_image": "DSC04260.JPG"
+    },
+    {
+      "scene_name": "faec2f0468",
+      "first_image": "DSC00039.JPG",
+      "last_image": "DSC00148.JPG"
+    },
+    {
+      "scene_name": "bc94b31d5b",
+      "first_image": "cab8bdfc_DSC00936.JPG",
+      "last_image":  "cab8bdfc_DSC01040.JPG"
+    }
+  ]
+}
