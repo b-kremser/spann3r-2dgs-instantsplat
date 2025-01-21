@@ -1,7 +1,7 @@
 {
-  "source_directory": "Path to the ScanNet++ source directory",
-  "output_directory": "Path to the output directory",
-  "no_images": 24,
+  "source_directory": "Data/ScanNet++/data/data/",
+  "output_directory": "Data/InstantSplat/assets/ScanNetPP",
+  "no_images": 6,
   "scenes": [
     {
       "scene_name": "7692b88644",
@@ -17,6 +17,31 @@
       "scene_name": "bc94b31d5b",
       "first_image": "cab8bdfc_DSC00936.JPG",
       "last_image":  "cab8bdfc_DSC01040.JPG"
+    },
+    {
+      "scene_name": "21c5ee0ca5",
+      "first_image": "DSC09355.JPG",
+      "last_image": "DSC09578.JPG"
+    },
+    {
+      "scene_name": "48da625e8c",
+      "first_image": "839ab7f2_DSC04757.JPG",
+      "last_image": "839ab7f2_DSC05246.JPG"
+    },
+    {
+      "scene_name": "364f01bc18",
+      "first_image": "e0e710df_DSC01276.JPG",
+      "last_image": "e0e710df_DSC01500.JPG"
+    },
+    {
+      "scene_name": "c173f62b15",
+      "first_image": "DSC03144.JPG",
+      "last_image": "DSC03183.JPG"
+    },
+    {
+      "scene_name": "fe5fe0a8a4",
+      "first_image": "02dd3b53_DSC03193.JPG",
+      "last_image": "02dd3b53_DSC03864.JPG"
     }
   ]
 }
