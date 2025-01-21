@@ -33,8 +33,6 @@ class ReconstructionConfig:
     ckpt_path: str
     device: str
     image_size: int
-    min_conf_thr: float
-    llffhold: int
     n_views: int
     infer_video: bool = False
 
@@ -90,24 +88,14 @@ class Reconstructor:
         
         if self.config.infer_video:
             return batch, [Path(view['file_name'][0]) for view in batch], None
-        
-        # Custom train/test split implementation
-        n_total = len(batch)
-        n_test = min(self.config.llffhold, n_total - 1)
-        indices = np.arange(n_total)
-        test_indices = indices[::n_total // n_test][:n_test]
-        train_indices = np.array([i for i in indices if i not in test_indices])
-        
-        if self.config.n_views:
-            train_indices = train_indices[:self.config.n_views]
-            
-        train_batch = [batch[i] for i in train_indices]
-        test_batch = [batch[i] for i in test_indices]
+                    
+        train_batch = [b for b in batch if b['file_name'][0].startswith("train")]
+        test_batch = [b for b in batch if b['file_name'][0].startswith("test")]
         
         return (
             train_batch,
-            [Path(train_batch[i]['file_name']) for i in range(len(train_batch))],
-            [Path(test_batch[i]['file_name']) for i in range(len(test_batch))]
+            [Path(train_batch[i]['file_name'][0]) for i in range(len(train_batch))],
+            [Path(test_batch[i]['file_name'][0]) for i in range(len(test_batch))]
         )
 
     def _estimate_focal(
@@ -150,7 +138,7 @@ class Reconstructor:
         pts3d: np.ndarray,                # shape: (H, W, 3)
         K: np.ndarray,                    # shape: (3, 3), the camera intrinsics
         conf: np.ndarray = None,          # shape: (H, W), optional confidence map
-        conf_threshold: float = 0.8,      # if percentile_mode=True, this is the quantile
+        conf_threshold: float = 0.1,      # if percentile_mode=True, this is the quantile
         percentile_mode: bool = True
     ) -> np.ndarray:
         """
@@ -176,10 +164,8 @@ class Reconstructor:
             conf_flat = conf.reshape(-1)  # shape: (N,)
 
             if percentile_mode:
-                # Use conf_threshold as a quantile (e.g. 0.9 for 90th percentile)
                 thr_value = np.quantile(conf_flat, conf_threshold)
             else:
-                # Use conf_threshold directly (e.g. 0.5 to keep conf >= 0.5)
                 thr_value = conf_threshold
 
             mask = (conf_flat >= thr_value)
@@ -247,11 +233,16 @@ class Reconstructor:
         all_pts_concat = np.concatenate(tmp_pts3d, axis=0)  
         all_conf_concat = np.concatenate(all_conf, axis=0)  
 
-        conf_threshold = np.quantile(all_conf_concat, 0.9)     
-        high_conf_mask = all_conf_concat >= conf_threshold    
-        high_conf_pts = all_pts_concat[high_conf_mask]       
+        if self.config.infer_video:
+            conf_threshold = np.quantile(all_conf_concat, 0.1)     
+            valid_mask = all_conf_concat >= conf_threshold
+        else:
+            valid_mask = np.load(str(self.sparse_0_path / "valids.npy")).reshape(-1)
 
-        scale = np.mean(np.linalg.norm(high_conf_pts, axis=-1))  
+        scale_valid_pts = all_pts_concat.copy()
+        scale_valid_pts[~valid_mask] = 0.0   
+
+        scale = np.mean(np.linalg.norm(scale_valid_pts, axis=-1))  
 
         for j, view in enumerate(train_batch):
             # Scale the "main" pts3d if j==0, otherwise scale pts3d_in_other_view
@@ -272,10 +263,7 @@ class Reconstructor:
                         else preds[j]['pts3d_in_other_view'])
             pts3d_pred = pts3d_pred.detach().cpu().numpy()[0]  
             conf_pred = preds[j]['conf'][0].detach().cpu().numpy()
-            if j == 0:
-                extrinsic_w2c = np.eye(4, dtype=np.float32)
-            else:
-                extrinsic_w2c = self._solve_pnp(pts3d_pred, K, conf_pred)
+            extrinsic_w2c = self._solve_pnp(pts3d_pred, K, conf_pred)
 
             # Store processed data
             img = view['original_img'][0].mul(255).cpu().numpy().transpose(1, 2, 0)
@@ -292,20 +280,16 @@ class Reconstructor:
         conf_concat = np.concatenate(all_conf)
         colors_concat = np.concatenate(all_colors)
 
-        # Apply confidence thresholding
-        conf_sig = (conf_concat - 1.0) / conf_concat
-        conf_mask = conf_sig > self.config.min_conf_thr
-
         # Save results
-        if not self.config.infer_video and test_img_files:
-            self._save_test_data(
-                all_extrinsics_w2c,
-                test_img_files,
-                focal_est,
-                predH,
-                predW,
-                image_suffix
-            )
+        # if not self.config.infer_video and test_img_files:
+        #     self._save_test_data(
+        #         all_extrinsics_w2c,
+        #         test_img_files,
+        #         focal_est,
+        #         predH,
+        #         predW,
+        #         image_suffix
+        #     )
 
         # Save training data
         train_focals = np.full(len(train_img_files), focal_est)
@@ -408,8 +392,6 @@ def main():
     parser.add_argument('--ckpt_path', default='./checkpoints/spann3r.pth', help='Checkpoint path')
     parser.add_argument('--device', default='cuda', help='Device for inference')
     parser.add_argument('--image_size', type=int, default=224, help='Image size')
-    parser.add_argument('--min_conf_thr', type=float, default=1e-3, help='Confidence threshold')
-    parser.add_argument('--llffhold', type=int, default=8, help='Train/test split parameter')
     parser.add_argument('--n_views', type=int, default=3, help='Number of training views')
     parser.add_argument('--infer_video', action="store_true", help='Process as video sequence')
 

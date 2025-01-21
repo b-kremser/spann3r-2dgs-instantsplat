@@ -73,7 +73,7 @@ def load_and_prepare_confidence(confidence_path, device='cuda', scale=(0.1, 1.0)
     """
     # Load and normalize
     confidence_np = np.load(confidence_path)
-    confidence_tensor = torch.from_numpy(confidence_np).float().to(device)
+    confidence_tensor = torch.from_numpy(confidence_np).float().to(device) - 1.0
     normalized_confidence = torch.sigmoid(confidence_tensor)
 
     # Invert confidence and scale to desired range
@@ -91,7 +91,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
     # per-point-optimizer
     confidence_path = os.path.join(dataset.source_path, f"sparse_{dataset.n_views}/0", "confidence_dsp.npy")
-    confidence_lr = load_and_prepare_confidence(confidence_path, device='cuda', scale=(1, 10))
+    confidence_lr = load_and_prepare_confidence(confidence_path, device='cuda', scale=(1, 100))
     scene = Scene(dataset, gaussians)
 
     if opt.pp_optimizer:
