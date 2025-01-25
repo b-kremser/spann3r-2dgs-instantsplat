@@ -1,18 +1,19 @@
 #!/bin/bash
+export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
-DATA_ROOT_DIR="/home/team13/Workspace/InstantSplat/assets"
+DATA_ROOT_DIR="/home/bjoern/PycharmProjects/spann3r-2dgs-instantsplat/assets_test"
 OUTPUT_DIR="output_infer"
 DATASETS=(
-    examples
+    scannetpp
 )
 
 SCENES=(
-    Barn
+    a980334473_00
 )
 
 N_VIEWS=(
-    3
+    6
 )
 
 gs_train_iter=(
@@ -21,7 +22,7 @@ gs_train_iter=(
 
 # Function to get the id of an available GPU
 get_available_gpu() {
-    local mem_threshold=500
+    local mem_threshold=1000
     nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits | awk -v threshold="$mem_threshold" -F', ' '
     $2 < threshold { print $1; exit }
     '
@@ -47,7 +48,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 2DGS/init_geo.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
@@ -57,7 +58,7 @@ run_on_gpu() {
 
     # (2) Train: jointly optimize pose
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting training..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/train.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -73,7 +74,7 @@ run_on_gpu() {
 
     # (3) Render-Training_View
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering training views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \

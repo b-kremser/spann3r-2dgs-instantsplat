@@ -11,7 +11,7 @@
 
 import torch
 import torch.nn.functional as F
-import pytorch3d
+#import pytorch3d
 import numpy as np
 import open3d as o3d
 from torch.autograd import Variable
@@ -120,10 +120,12 @@ def chamfer_loss(pc_path1, pc_path2):
     pc1 = load_point_cloud(pc_path1).unsqueeze(0)  # batch dimension
     pc2 = load_point_cloud(pc_path2).unsqueeze(0)
 
-    return pytorch3d.loss.chamfer_distance(pc1, pc2)
+    return 0
+    #return pytorch3d.loss.chamfer_distance(pc1, pc2)
 
 def mesh_chamfer_loss(mesh_path1, mesh_path2): 
     pc1 = load_mesh_as_pointcloud(mesh_path1).unsqueeze(0)
     pc2 = load_mesh_as_pointcloud(mesh_path2).unsqueeze(0)
 
-    return pytorch3d.loss.chamfer_distance(pc1, pc2)
+    return 0
+    # return pytorch3d.loss.chamfer_distance(pc1, pc2)

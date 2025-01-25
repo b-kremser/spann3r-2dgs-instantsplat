@@ -1,4 +1,5 @@
 #!/bin/bash
+export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
 DATA_ROOT_DIR="/home/team13/Workspace/InstantSplat/assets_test"
@@ -47,7 +48,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 2DGS/init_geo.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
@@ -56,7 +57,7 @@ run_on_gpu() {
 
     # (2) Train: jointly optimize pose
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting training..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/train.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -82,7 +83,7 @@ run_on_gpu() {
 
     # (4) Render-Training_View
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering training views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -99,7 +100,7 @@ run_on_gpu() {
 
     # (5) Render-Testing_View
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering testing views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -112,7 +113,7 @@ run_on_gpu() {
 
     # (6) Metrics
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Calculating metrics..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./metrics.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 2DGS/metrics.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
