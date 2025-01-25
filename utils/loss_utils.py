@@ -11,6 +11,9 @@
 
 import torch
 import torch.nn.functional as F
+import pytorch3d
+import numpy as np
+import open3d as o3d
 from torch.autograd import Variable
 from math import exp
 
@@ -93,3 +96,34 @@ def _ssim(img1, img2, window, window_size, channel, size_average=True):
     else:
         return ssim_map.mean(1).mean(1).mean(1)
 
+def load_point_cloud(file_path):
+    """
+    Load the point cloud as a FloatTensor.
+    """
+    pcd = o3d.io.read_point_cloud(file_path)
+    return torch.tensor(np.asarray(pcd.points), dtype=torch.float32)
+
+def load_mesh_as_pointcloud(file_path, num_samples=2000):
+    """
+    Loads the mesh and randomly samples (num_samples) points from its surface.
+    """
+    mesh = o3d.io.read_triangle_mesh(file_path)
+
+    if not mesh.has_vertex_normals(): 
+        mesh.compute_vertex_normals()
+
+    pcd = mesh.sample_points_uniformly(number_of_points=num_samples)
+
+    return torch.tensor(np.asarray(pcd.points), dtype=torch.float32)
+
+def chamfer_loss(pc_path1, pc_path2): 
+    pc1 = load_point_cloud(pc_path1).unsqueeze(0)  # batch dimension
+    pc2 = load_point_cloud(pc_path2).unsqueeze(0)
+
+    return pytorch3d.loss.chamfer_distance(pc1, pc2)
+
+def mesh_chamfer_loss(mesh_path1, mesh_path2): 
+    pc1 = load_mesh_as_pointcloud(mesh_path1).unsqueeze(0)
+    pc2 = load_mesh_as_pointcloud(mesh_path2).unsqueeze(0)
+
+    return pytorch3d.loss.chamfer_distance(pc1, pc2)
