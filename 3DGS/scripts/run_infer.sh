@@ -49,7 +49,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 3DGS/init_geo.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
@@ -62,7 +62,7 @@ run_on_gpu() {
  
     # (2) Train: jointly optimize pose
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting training..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/train.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -75,12 +75,13 @@ run_on_gpu() {
 
     # (3) Render-Video
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering training views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
     --n_views ${N_VIEW} \
     --iterations ${gs_train_iter} \
+    --skip_mesh \
     --infer_video \
     > ${MODEL_PATH}/03_render.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Rendering completed. Log saved in ${MODEL_PATH}/03_render.log"

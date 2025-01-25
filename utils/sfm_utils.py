@@ -270,7 +270,7 @@ def save_points3D(sparse_path, colors, pts3d, confs, masks=None, use_masks=True,
         masks = to_numpy(masks)
         pts = np.concatenate([p[m] for p, m in zip(pts3d, masks)])
         col = np.concatenate([p[m] for p, m in zip(colors, masks)])
-        confs = np.concatenate([p[m] for p, m in zip(confs, masks)])
+        confs = np.concatenate([p[m] for p, m in zip(confs, masks.reshape(masks.shape[0], -1))])
     else:
         pts = np.array(pts3d)
         col = np.array(colors)

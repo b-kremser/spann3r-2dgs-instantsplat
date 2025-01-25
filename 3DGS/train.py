@@ -26,7 +26,6 @@ from scene import Scene, GaussianModel
 from scene.cameras import Camera
 from utils.camera_utils import generate_interpolated_path
 from utils.general_utils import safe_state
-from utils.graphics_utils import getWorld2View2_torch
 from utils.image_utils import psnr
 from utils.loss_utils import l1_loss, ssim
 from utils.pose_utils import get_camera_from_tensor
@@ -161,7 +160,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         if (iteration - 1) == debug_from:
             pipe.debug = True
 
-        bg = torch.rand((3), device="cuda") if opt.random_background else background
+        bg = background
 
         render_pkg = render(viewpoint_cam, gaussians, pipe, bg, camera_pose=pose)
         image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]

@@ -36,7 +36,6 @@ N_VIEWS=(
 )
 
 gs_train_iter=(
-    # 200
     1000
 )
 
@@ -55,7 +54,7 @@ run_on_gpu() {
     local SCENE=$3
     local N_VIEW=$4
     local gs_train_iter=$5
-    SOURCE_PATH=${DATA_ROOT_DIR}/${DATASET}/${SCENE}/24_views/
+    SOURCE_PATH=${DATA_ROOT_DIR}/${DATASET}/${SCENE}
     GT_POSE_PATH=${DATA_ROOT_DIR}/${DATASET}/${SCENE}/
     IMAGE_PATH=${SOURCE_PATH}images
     MODEL_PATH=./${OUTPUT_DIR}/${DATASET}/${SCENE}/${N_VIEW}_views
@@ -69,7 +68,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 3DGS/init_geo.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
@@ -82,7 +81,7 @@ run_on_gpu() {
  
     # (2) Train: jointly optimize pose
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting training..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/train.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -96,18 +95,22 @@ run_on_gpu() {
     
     # (3) Render-Training_View
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering training views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
     --n_views ${N_VIEW} \
     --iterations ${gs_train_iter} \
+    --depth_ratio 0 \
+    --num_cluster 50 \
+    --mesh_res 2048 \
+    --depth_trunc 6.0 \
     > ${MODEL_PATH}/03_render_train.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Rendering completed. Log saved in ${MODEL_PATH}/03_render_train.log"
 
     # (4) Render-Testing_View
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting rendering testing views..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./render.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/render.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     -r 1 \
@@ -120,7 +123,7 @@ run_on_gpu() {
 
     # # (5) Metrics
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Calculating metrics..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python ./metrics.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python 3DGS/metrics.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
