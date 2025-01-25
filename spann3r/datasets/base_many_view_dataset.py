@@ -45,9 +45,20 @@ class BaseManyViewDataset(BaseStereoViewDataset):
         if not full_video:
             img_idxs = self.sample_frames(img_idxs, rng)
         else:
-            img_idxs = img_idxs[::self.kf_every]
-        
+            if self.kf_every == 1:
+                return img_idxs
+            
+            all_indices = list(range(len(img_idxs) - (self.num_frames + 1) * self.kf_every))
+            c_current = rng.choice(all_indices)
+            # Get context frames (keyframes)
+            context = img_idxs[c_current::self.kf_every][:self.num_frames]
+            
+            # Get all frames between consecutive context frames as targets
+            target = []
+            for i in range(len(context) - 1):
+                start_idx = img_idxs.index(context[i]) + 1
+                end_idx = img_idxs.index(context[i + 1])
+                target.extend(img_idxs[start_idx:end_idx])
+            img_idxs = context + target
         return img_idxs
-
-
     

@@ -246,6 +246,11 @@ def save_intrinsics(sparse_path, focals, org_imgs_shape, imgs_shape, save_focals
     if save_focals:
         np.save(sparse_path / 'non_scaled_focals.npy', focals)
 
+def save_valids(sparse_path, valids):
+
+    np.save(sparse_path / 'valids.npy', valids)
+
+
 
 def save_points3D(sparse_path, colors, pts3d, confs, masks=None, use_masks=True, save_all_pts=False, save_txt_path=None, max_pts_num=150 * 10**10):
     

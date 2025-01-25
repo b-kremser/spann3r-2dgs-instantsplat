@@ -4,6 +4,7 @@ import json
 import numpy as np
 import os.path as osp
 from collections import deque
+from pathlib import Path
 
 from dust3r.utils.image import imread_cv2
 from .base_many_view_dataset import BaseManyViewDataset
@@ -90,6 +91,7 @@ class Scannetpp(BaseManyViewDataset):
             camera_pose = np.array(frame_metadata["transform_matrix"], dtype=np.float32)
             # gl to cv
             camera_pose[:, 1:3] *= -1.0
+            original_shape = rgb_image.shape
 
             rgb_image, depthmap, intrinsics = self._crop_resize_if_necessary(
                 rgb_image, depthmap, intrinsics, resolution, rng=rng, info=impath)
@@ -104,14 +106,17 @@ class Scannetpp(BaseManyViewDataset):
                         new_idx = rng.integers(0, self.__len__()-1)
                         return self._get_views(new_idx, resolution, rng)
                     return self._get_views(idx, resolution, rng, attempts+1)
-            
+
             views.append(dict(
                 img=rgb_image,
                 depthmap=depthmap,
                 camera_pose=camera_pose,
                 camera_intrinsics=intrinsics,
+                original_size=original_shape,
                 dataset='scannetpp',
                 label=osp.join(scene_id, im_idx),
+                suffix=Path(osp.join(self.ROOT, im_idx)).suffix,
+                file_name=str(im_idx),
                 instance=osp.split(impath)[1],
             ))
         return views
