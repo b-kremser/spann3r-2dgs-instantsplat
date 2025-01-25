@@ -2,7 +2,7 @@
 export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
-DATA_ROOT_DIR="/home/bjoern/PycharmProjects/spann3r-2dgs-instantsplat/assets_test"
+DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
 OUTPUT_DIR="output_infer"
 DATASETS=(
     scannetpp
@@ -13,11 +13,11 @@ SCENES=(
 )
 
 N_VIEWS=(
-    6
+    3
 )
 
 gs_train_iter=(
-    5000
+  1000
 )
 
 # Function to get the id of an available GPU

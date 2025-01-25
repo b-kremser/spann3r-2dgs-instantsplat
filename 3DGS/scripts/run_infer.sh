@@ -6,19 +6,20 @@ export PYTHONPATH=$(pwd):$PYTHONPATH
 DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
 OUTPUT_DIR="output_infer"
 DATASETS=(
-    sora
+    scannetpp
 )
 
 SCENES=(
-    Santorini
-    Art
+    a980334473_00
 )
 
 N_VIEWS=(
     3
 )
 
-gs_train_iter=1000
+gs_train_iter=(
+  1000
+)
 
 # Function to get the id of an available GPU
 get_available_gpu() {
@@ -49,7 +50,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 3DGS/init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo_spann3r.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \

@@ -3,36 +3,18 @@ export PYTHONPATH=$(pwd):$PYTHONPATH
 
 
 # Change the absolute path first!
-DATA_ROOT_DIR="<Absolute_Path>/InstantSplat"
-OUTPUT_DIR="output_eval_XL"
+DATA_ROOT_DIR="/home/bjoern/PycharmProjects/spann3r-2dgs-instantsplat/assets_test"
+OUTPUT_DIR="output_eval"
 DATASETS=(
-    Tanks
-    # MVimgNet
+    scannetpp
 )
 
 SCENES=(
-    # Family
-    Horse
-    # Ballroom
-    # Barn
-    # Church
-    # Francis
-    # Ignatius
-    # Museum
-
-    # bench
-    # bicycle
-    # car
-    # chair
-    # ladder
-    # suv
-    # table
+    a980334473_00
 )
 
 N_VIEWS=(
-    3
-    # 6
-    # 12
+    6
 )
 
 gs_train_iter=(
@@ -68,7 +50,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 3DGS/init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo_spann3r.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \

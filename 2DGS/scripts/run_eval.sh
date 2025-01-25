@@ -2,14 +2,14 @@
 export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
-DATA_ROOT_DIR="/home/team13/Workspace/InstantSplat/assets_test"
-OUTPUT_DIR="output_eval"
+DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
+OUTPUT_DIR="output_infer"
 DATASETS=(
     scannetpp
 )
 
 SCENES=(
-    3f15a9266d_21
+    a980334473_00
 )
 
 N_VIEWS=(
@@ -17,12 +17,12 @@ N_VIEWS=(
 )
 
 gs_train_iter=(
-    2500
+  1000
 )
 
 # Function to get the id of an available GPU
 get_available_gpu() {
-    local mem_threshold=500
+    local mem_threshold=1000
     nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits | awk -v threshold="$mem_threshold" -F', ' '
     $2 < threshold { print $1; exit }
     '
@@ -48,7 +48,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 2DGS/init_geo_spann3r.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore ./init_geo_spann3r.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
