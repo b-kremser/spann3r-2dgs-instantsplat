@@ -48,7 +48,7 @@ run_on_gpu() {
 
     # (1) Co-visible Global Geometry Initialization
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Co-visible Global Geometry Initialization..."
-    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 2DGS/init_geo.py \
+    CUDA_VISIBLE_DEVICES=${GPU_ID} python -W ignore 2DGS/init_geo_spann3r.py \
     -s ${SOURCE_PATH} \
     -m ${MODEL_PATH} \
     --n_views ${N_VIEW} \
