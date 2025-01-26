@@ -101,6 +101,7 @@ run_on_gpu() {
         -r 1 \
         --n_views ${N_VIEW} \
         --iterations ${gs_train_iter} \
+        --test_iterations ${gs_train_iter} \
         --pp_optimizer \
         --optim_pose \
         > ${MODEL_PATH}/02_train.log 2>&1

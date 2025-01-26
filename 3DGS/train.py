@@ -325,7 +325,7 @@ if __name__ == "__main__":
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
     # To avoid bug when using >=5000 iterations
     test_iterations = args.test_iterations
-    if test_iterations is []:
+    if test_iterations is [] or test_iterations is None:
         test_iterations = [-1]
     training(lp.extract(args), op.extract(args), pp.extract(args), test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
 
