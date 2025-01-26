@@ -2,14 +2,14 @@
 export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
-DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
+DATA_ROOT_DIR="/home/bjoern/PycharmProjects/spann3r-2dgs-instantsplat/assets"
 OUTPUT_DIR="output_eval"
 DATASETS=(
     scannetpp
 )
 
 SCENES=(
-    a980334473_00
+    3f15a9266d_20
 )
 
 N_VIEWS=(
@@ -21,12 +21,13 @@ gs_train_iter=(
 )
 
 # Can be 3DGS and / or 2DGS
-gs_type=(
+gs_types=(
+  2DGS
   3DGS
 )
 
 # Can be spann3r and / or dust3r
-pc_initializer=(
+pc_initializers=(
   spann3r
   dust3r
 )
@@ -186,15 +187,15 @@ run_on_gpu() {
 }
 
 # Main loop
-total_tasks=$((${#DATASETS[@]} * ${#SCENES[@]} * ${#N_VIEWS[@]} * ${#gs_train_iter[@]} * ${#gs_type[@]} * ${#pc_initializer[@]}))
+total_tasks=$((${#DATASETS[@]} * ${#SCENES[@]} * ${#N_VIEWS[@]} * ${#gs_train_iter[@]} * ${#gs_types[@]} * ${#pc_initializers[@]}))
 current_task=0
 
 for DATASET in "${DATASETS[@]}"; do
     for SCENE in "${SCENES[@]}"; do
         for N_VIEW in "${N_VIEWS[@]}"; do
             for gs_train_iter in "${gs_train_iter[@]}"; do
-                for gs_type in "${gs_type[@]}"; do
-                    for pc_initializer in "${pc_initializer[@]}"; do
+                for gs_type in "${gs_types[@]}"; do
+                    for pc_initializer in "${pc_initializers[@]}"; do
                         current_task=$((current_task + 1))
                         echo "Processing task $current_task / $total_tasks"
 
