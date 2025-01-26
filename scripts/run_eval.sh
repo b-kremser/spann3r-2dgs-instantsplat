@@ -3,7 +3,7 @@ export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # Change the absolute path first!
 DATA_ROOT_DIR="<Absolute_Path>/InstantSplat/assets"
-OUTPUT_DIR="output_infer"
+OUTPUT_DIR="output_eval"
 DATASETS=(
     scannetpp
 )
@@ -13,11 +13,11 @@ SCENES=(
 )
 
 N_VIEWS=(
-    3
+    6
 )
 
 gs_train_iter=(
-  1000
+  5000
 )
 
 # Can be 3DGS and / or 2DGS
@@ -28,6 +28,7 @@ gs_type=(
 # Can be spann3r and / or dust3r
 pc_initializer=(
   spann3r
+  dust3r
 )
 
 # Function to get the id of an available GPU
@@ -207,11 +208,8 @@ for DATASET in "${DATASETS[@]}"; do
                             GPU_ID=$(get_available_gpu)
                         done
 
-                        # Run the task in the background
-                        (run_on_gpu $GPU_ID "$DATASET" "$SCENE" "$N_VIEW" "$gs_train_iter" "$gs_type" "$pc_initializer") &
-
-                        # Wait for 20 seconds before trying to start the next task
-                        sleep 10
+                        # Run the task
+                        (run_on_gpu $GPU_ID "$DATASET" "$SCENE" "$N_VIEW" "$gs_train_iter" "$gs_type" "$pc_initializer")
                     done
                 done
             done

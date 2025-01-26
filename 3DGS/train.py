@@ -323,7 +323,11 @@ if __name__ == "__main__":
     if not args.disable_viewer:
         network_gui.init(args.ip, args.port)
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
-    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
+    # To avoid bug when using >=5000 iterations
+    test_iterations = args.test_iterations
+    if test_iterations is []:
+        test_iterations = [-1]
+    training(lp.extract(args), op.extract(args), pp.extract(args), test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
 
     # All done
     print("\nTraining complete.")
