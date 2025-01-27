@@ -68,7 +68,10 @@ def evaluate(args):
             full_dict[scene_dir] = {}
             per_view_dict[scene_dir] = {}
 
-            test_dir = Path(scene_dir) / "test"
+            if args.train_views_only:
+                test_dir = Path(scene_dir) / "train"
+            else:
+                test_dir = Path(scene_dir) / "test"
 
             for method in os.listdir(test_dir):
                 print("Method:", method)
@@ -147,5 +150,6 @@ if __name__ == "__main__":
     parser.add_argument('--source_path', '-s', required=True, type=str, default=None)
     parser.add_argument('--model_paths', '-m', required=True, nargs="+", type=str, default=[])
     parser.add_argument("--n_views", default=None, type=int)
+    parser.add_argument("--train_views_only", action='store_true', default=False)
     args = parser.parse_args()
     evaluate(args)
